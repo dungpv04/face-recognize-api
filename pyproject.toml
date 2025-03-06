@@ -1,0 +1,27 @@
+[project]
+name = "face-recognize-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Dungpv04", email = "vandungpham2004@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "faiss-cpu>=1.10.0",
+    "fastapi[standard]>=0.115.11",
+    "keras-facenet>=0.3.2",
+    "mtcnn>=1.0.0",
+    "opencv-python>=4.11.0.86",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.6",
+    "spicy>=0.16.0",
+    "tensorflow>=2.18.0",
+]
+
+[project.scripts]
+dev = "face_recognize_api:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
