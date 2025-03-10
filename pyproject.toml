@@ -8,20 +8,28 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.15.1",
     "faiss-cpu>=1.10.0",
-    "fastapi[standard]>=0.115.11",
+    "fastapi[all,standard]>=0.115.11",
     "keras-facenet>=0.3.2",
     "mtcnn>=1.0.0",
     "opencv-python>=4.11.0.86",
     "pandas>=2.2.3",
+    "psycopg2>=2.9.10",
+    "psycopg2-binary>=2.9.10",
     "pydantic>=2.10.6",
     "spicy>=0.16.0",
+    "sqlalchemy>=2.0.38",
+    "sqlmodel>=0.0.23",
     "tensorflow>=2.18.0",
 ]
 
 [project.scripts]
-dev = "face_recognize_api:main"
+dev = "face_recognize_api:app"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/face_recognize_api"]
