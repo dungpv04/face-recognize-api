@@ -1,8 +1,4 @@
-from mtcnn import MTCNN
-from keras_facenet import FaceNet
-
-def get_mtcnn():
-    return MTCNN()
-
-def get_facenet():
-    return FaceNet()
+from fastapi import FastAPI, Depends
+from services.face_recognize_service import FaceRecognizeService
+def get_face_recognize_service(app: FastAPI = Depends()) -> FaceRecognizeService:
+    return app.state.faceRecognizeService

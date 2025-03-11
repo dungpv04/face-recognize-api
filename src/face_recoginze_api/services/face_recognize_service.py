@@ -12,10 +12,12 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 from database.tables import FaceEmbeddingModel
 from enum import Enum
+import tempfile
 
 class ErrorType(Enum):
     NO_FACE_DETECED = "No face detected"
     FACE_NOT_FOUND = "Face not found"
+    NOT_MOVING_FACE = "Not a moving face"
 
 class FaceRecognizeService:
     def __init__(self, session: Session):
@@ -93,11 +95,15 @@ class FaceRecognizeService:
         print("✅ Đã lưu face_embeddings.csv thành công!")
     
     def recognize_face(self, file: UploadFile):
+        # if not self.validate_face(file):
+        #     return ErrorType.NOT_MOVING_FACE.value
+
         frame = self.read_image(file)
         frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)  # Chuyển BGR → RGB
         results = self.detector.detect_faces(frame_rgb)
         
         if results:
+            print(results)
             x, y, w, h = results[0]['box']
             face_img = frame[y: y+h, x: x+w]
             face_img = cv.resize(face_img, (160, 160))
@@ -119,3 +125,68 @@ class FaceRecognizeService:
             raise HTTPException(status_code=500, detail="An error occur while trying to read image.")
 
         return frame
+    
+    def read_video(self, file: UploadFile):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+            temp_video.write(file.file.read())
+            return temp_video.name
+    
+    def validate_face(self, file: UploadFile):
+        vertical_move = False
+        horizontal_move = False
+        cap = cv.VideoCapture(self.read_video(file))
+        while cap.isOpened():
+            ret, frame = cap.read()
+            frame = cv.flip(frame, 1)
+            if not ret:
+                break
+
+            # Chuyển ảnh sang RGB (MTCNN yêu cầu định dạng này)
+            rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+
+            # Phát hiện khuôn mặt
+            faces = self.detector.detect_faces(rgb_frame)
+            prev_keypoints = None
+            if faces:
+                for face in faces:
+                    keypoints = face["keypoints"]
+
+                    # Lấy vị trí mắt và mũi
+                    left_eye = np.array(keypoints["left_eye"])
+                    right_eye = np.array(keypoints["right_eye"])
+                    nose = np.array(keypoints["nose"])
+
+                    # Vẽ keypoints lên ảnh
+                    x, y, width, height = face["box"]
+                    cv.rectangle(frame, (x, y), (x + width, y + height), (0, 255, 0), 2)
+
+                    # Nếu đã có frame trước, so sánh vị trí để xác định hướng di chuyển
+                    if prev_keypoints is not None:
+                        prev_nose = prev_keypoints["nose"]
+
+                        movement = nose - prev_nose
+                        direction = ""
+
+                        if movement[0] > 5:
+                            direction = "Right →"
+                            horizontal_move = True
+                        elif movement[0] < -5:
+                            direction = "← Left"
+                            horizontal_move = True
+
+                        if movement[1] > 5:
+                            direction += " ↓ Down"
+                            vertical_move = True
+                        elif movement[1] < -5:
+                            direction += " ↑ Up"
+                            vertical_move = True
+
+                        # Hiển thị hướng di chuyển lên màn hình
+                        print(f"Direction: {direction}")
+
+                        left_eye = keypoints['left_eye']
+                        right_eye = keypoints['right_eye']
+
+                    # Cập nhật keypoints của frame trước
+                    prev_keypoints = keypoints
+        return vertical_move and horizontal_move
