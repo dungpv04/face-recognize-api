@@ -1,8 +1,5 @@
 from fastapi import FastAPI, Depends
-from routers import faces
-from contextlib import asynccontextmanager
-from services.face_recognize_service import FaceRecognizeService
-from database.database import Database
+from face_recoginze_api.routers import faces
 
 app = FastAPI()
 

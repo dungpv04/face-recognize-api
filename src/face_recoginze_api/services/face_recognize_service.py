@@ -10,7 +10,7 @@ from mtcnn import MTCNN
 from keras_facenet import FaceNet
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from database.tables import FaceEmbeddingModel, FaceVector
+from face_recoginze_api.database.tables import FaceEmbeddingModel, FaceVector
 from sqlmodel.ext.asyncio.session import AsyncSession
 from enum import Enum
 import tempfile
@@ -63,7 +63,7 @@ class FaceRecognizeService:
         
         return self.index_to_name[best_index], best_distance
     
-    async def generate_face_embeddings(self, dataset_path="../dataset", db_session: AsyncSession = None):
+    async def generate_face_embeddings_sample(self, dataset_path="../dataset", db_session: AsyncSession = None):
         if db_session is None:
             raise ValueError("⚠️ Cần cung cấp db_session để kết nối database!")
 

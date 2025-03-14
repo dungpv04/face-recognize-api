@@ -1,12 +1,11 @@
-from services.face_recognize_service import FaceRecognizeService, ErrorType
+from face_recoginze_api.services.face_recognize_service import FaceRecognizeService, ErrorType
 from fastapi import UploadFile, Depends, HTTPException, APIRouter, FastAPI
 from contextlib import asynccontextmanager
 from typing import Annotated
 from sqlmodel import Session
-from database.database import Database
-from models.response_message import ResponseMessage, STATUS
-from sqlalchemy import text
-
+from face_recoginze_api.database.database import Database
+from face_recoginze_api.models.response_message import ResponseMessage, STATUS
+from face_recoginze_api.settings.database import DatabaseSettings
 database = Database()
 SessionDep = Annotated[Session, Depends(database.get_session)]
 
