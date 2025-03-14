@@ -5,18 +5,22 @@ from typing import Annotated
 from sqlmodel import Session
 from database.database import Database
 from models.response_message import ResponseMessage, STATUS
+from sqlalchemy import text
 
 database = Database()
-database.create_db_and_tables()
 SessionDep = Annotated[Session, Depends(database.get_session)]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global faceRecognizeService, database, SessionDep
-    with database.get_session() as session:  # ✅ Sửa next() thành with
+
+    async with database.get_session() as session:  # ✅ Dùng async with để lấy AsyncSession
+        await database.create_db_and_tables()
         faceRecognizeService = FaceRecognizeService(session)
+        await faceRecognizeService.initialize()
         yield  # Đợi FastAPI chạy app
         faceRecognizeService = None  # Cleanup khi app shutdown
+
 
 router = APIRouter(lifespan=lifespan)
 
@@ -35,9 +39,9 @@ async def recognize_face(image: UploadFile):
     if not image.filename:
         raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="You must upload exactly 1 file.", code=400).model_dump())
 
-    # Kiểm tra định dạng file có phải là JPG không
-    # if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif")):
-    #     raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
+    #Kiểm tra định dạng file có phải là JPG không
+    if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif")):
+        raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
 
     result = faceRecognizeService.recognize_face(file=image)
     if result == ErrorType.FACE_NOT_FOUND.value or result == ErrorType.NO_FACE_DETECED.value or result == ErrorType.NOT_MOVING_FACE.value:

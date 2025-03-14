@@ -10,7 +10,8 @@ from mtcnn import MTCNN
 from keras_facenet import FaceNet
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from database.tables import FaceEmbeddingModel
+from database.tables import FaceEmbeddingModel, FaceVector
+from sqlmodel.ext.asyncio.session import AsyncSession
 from enum import Enum
 import tempfile
 
@@ -20,14 +21,20 @@ class ErrorType(Enum):
     NOT_MOVING_FACE = "Not a moving face"
 
 class FaceRecognizeService:
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
-        
-        # Lấy dữ liệu từ DB
-        embeddings = self.session.exec(select(FaceEmbeddingModel)).all()
+
+    async def initialize(self):
+        # Truy vấn dữ liệu từ cả hai bảng bằng JOIN
+        result = await self.session.execute(
+            select(FaceEmbeddingModel.label, FaceVector.vector)
+            .join(FaceVector, FaceVector.face_embedding_id == FaceEmbeddingModel.id)
+        )
+        embeddings = result.all()  # Lấy tất cả kết quả
+
         # Chuyển dữ liệu về NumPy Array
-        self.labels = np.array([e.label for e in embeddings])  
-        self.vectors = np.array([np.array(e.embedding, dtype=np.float32).mean(axis=0) for e in embeddings])
+        self.labels = np.array([e[0] for e in embeddings])  
+        self.vectors = np.array([np.array(e[1], dtype=np.float32) for e in embeddings])
 
         # Ánh xạ chỉ số FAISS -> tên người
         self.index_to_name = {i: name for i, name in enumerate(self.labels)}
@@ -36,6 +43,7 @@ class FaceRecognizeService:
         dimension = self.vectors.shape[1]
         self.index = faiss.IndexHNSWFlat(dimension, 32)  # Faster Approximate Search
         self.index.add(self.vectors)
+
         self.detector = MTCNN()
         self.facenet = FaceNet()
     
@@ -55,44 +63,69 @@ class FaceRecognizeService:
         
         return self.index_to_name[best_index], best_distance
     
-    def generate_face_embeddings(self, dataset_path="src/dataset", output_csv="face_embeddings.csv"):
-        """
-        Quét thư mục dataset, trích xuất embeddings và lưu vào CSV.
-        """
-        data = []
-        
-        for root, dirs, files in os.walk(dataset_path):
-            label = os.path.basename(root)  # Lấy tên thư mục làm nhãn
-            print(f"📂 Đọc thư mục: {label}")
+    async def generate_face_embeddings(self, dataset_path="../dataset", db_session: AsyncSession = None):
+        if db_session is None:
+            raise ValueError("⚠️ Cần cung cấp db_session để kết nối database!")
 
-            for file in files:
-                file_path = os.path.join(root, file)
-                print(f"  📄 Xử lý: {file_path}")
-                
-                img_bgr = cv.imread(file_path)
-                if img_bgr is None:
-                    print(f"⚠️ Lỗi đọc ảnh: {file_path}")
-                    continue
-                
-                img_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
-                results = self.detector.detect_faces(img_rgb)
-                
-                if results:
-                    x, y, w, h = results[0]['box']
-                    face_img = img_rgb[y:y+h, x:x+w]
-                    
-                    if face_img.shape[0] > 0 and face_img.shape[1] > 0:
-                        face_img = cv.resize(face_img, (160, 160))
-                        face_img = np.expand_dims(face_img, axis=0)
-                        
-                        ypred = self.facenet.embeddings(face_img)
-                        data.append([label] + ypred.flatten().tolist())
-        
-        df = pd.DataFrame(data)
-        df.columns = ["label"] + [f"dim_{i}" for i in range(df.shape[1] - 1)]
-        df.to_csv(output_csv, index=False)
-        
-        print("✅ Đã lưu face_embeddings.csv thành công!")
+        num_folders = 0
+        num_files = 0
+
+        for root, dirs, files in os.walk(dataset_path):
+            num_folders += len(dirs)
+            num_files += len(files)
+
+        print(f"{num_files} and {num_folders}")
+
+        async with db_session.begin():  
+            for root, dirs, files in os.walk(dataset_path):
+                label = os.path.basename(root)
+                print(f"📂 Đọc thư mục: {label}")
+
+                # Kiểm tra xem người dùng đã tồn tại chưa
+                statement = select(FaceEmbeddingModel).where(FaceEmbeddingModel.label == label)
+                result = await db_session.execute(statement)
+                face = result.scalars().first()
+
+                if face:
+                    face_embedding_id = face.id
+                else:
+                    new_face = FaceEmbeddingModel(label=label)
+                    db_session.add(new_face)
+                    await db_session.flush()  
+                    face_embedding_id = new_face.id
+
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    print(f"  📄 Xử lý: {file_path}")
+
+                    img_bgr = cv.imread(file_path)
+                    if img_bgr is None:
+                        print(f"⚠️ Lỗi đọc ảnh: {file_path}")
+                        continue
+
+                    img_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
+                    results = self.detector.detect_faces(img_rgb)
+
+                    if results:
+                        x, y, w, h = results[0]['box']
+                        face_img = img_rgb[y:y+h, x:x+w]
+
+                        if face_img.shape[0] > 0 and face_img.shape[1] > 0:
+                            face_img = cv.resize(face_img, (160, 160))
+                            face_img = np.expand_dims(face_img, axis=0)
+
+                            # Lấy embeddings
+                            ypred = self.facenet.embeddings(face_img).flatten().tolist()
+                            print(f"🎯 Embedding tạo thành công: {ypred[:5]}...")  # Debug
+
+                            # Lưu vào DB
+                            new_vector = FaceVector(vector=ypred, face_embedding_id=face_embedding_id)
+                            db_session.add(new_vector)
+                            print(f"📝 Đã thêm vector vào DB: {new_vector}")
+
+            await db_session.commit()  
+            print("✅ Đã commit dữ liệu vào PostgreSQL thành công!")
+
     
     def recognize_face(self, file: UploadFile):
         # if not self.validate_face(file):
