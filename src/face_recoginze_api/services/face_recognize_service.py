@@ -206,6 +206,7 @@ class FaceRecognizeService:
                 face_embedding_id = new_face.id
             print(f"📂 Tổng số file cần xử lý: {len(files)}")
             new_vectors: list[FaceVector] = []
+            new_embeddings = []
             for save_path in files:
                 # Kiểm tra xem người dùng đã tồn tại chưa
                 # Đọc ảnh
@@ -237,10 +238,21 @@ class FaceRecognizeService:
 
                 new_vector = FaceVector(vector=ypred, face_embedding_id=face_embedding_id)
                 new_vectors.append(new_vector)
+                new_embeddings.append(ypred)
                 print(f"📝 Đã thêm vector vào DB: {new_vector}")
 
-            db_session.add(new_vectors)
+            db_session.add_all(new_vectors)
+            
             await db_session.commit()
+            if new_embeddings:
+                new_embeddings_np = np.array(new_embeddings, dtype=np.float32)
+                start_index = self.index.ntotal  # Lấy index bắt đầu từ FAISS
+
+                self.index.add(new_embeddings_np)  # Thêm vector mới vào FAISS
+
+                # Cập nhật index_to_name với một nhãn duy nhất (username)
+                for i in range(len(new_embeddings)):
+                    self.index_to_name[start_index + i] = username
             return "Face has been added to database."
 
         except Exception as e:
