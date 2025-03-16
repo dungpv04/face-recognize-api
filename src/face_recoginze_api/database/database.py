@@ -2,6 +2,8 @@ from face_recoginze_api.database import tables
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from face_recoginze_api.settings.database import DatabaseSettings
+from typing import AsyncGenerator
+
 
 class Database:
     def __init__(self):
@@ -22,6 +24,6 @@ class Database:
 
 
     @asynccontextmanager
-    async def get_session(self) -> AsyncSession:
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.async_session_maker() as session:
             yield session  # ✅ Trả về AsyncSession
