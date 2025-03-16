@@ -127,7 +127,7 @@ async def recognize_face(image: UploadFile):
         }
     }
 })
-async def upload_files(username: str, images: List[UploadFile], session: AsyncSession = Depends(database.get_session)):
+async def add_new_face(username: str, images: List[UploadFile], session: AsyncSession = Depends(database.get_session)):
     
     if len(images) < 5:
         raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, code=400, message="You must upload at least 5 images").model_dump())
@@ -145,7 +145,59 @@ async def upload_files(username: str, images: List[UploadFile], session: AsyncSe
         else:
             return ResponseMessage(status=STATUS.SUCCEED, message="Face has been added to database", code=200)
 
-@router.get('sample')  
+@router.post(
+    "/sample",
+    summary="Add sample face embeddings to the database",
+    description="This endpoint inserts sample face embeddings into the database. It initializes the necessary models and processes the embeddings before storing them.",
+    response_description="Returns a success message if the data is added successfully.",
+    responses={
+        200: {"description": "Sample data added successfully.",
+              "content": {
+                "application/json": {
+                    "example": {
+                        "status": "SUCCEED",
+                        "code": 200,
+                        "message": "Sample data added successfully."
+                    }
+                }
+            }},
+        500: {
+            "description": "Internal Server Error - Failed to add sample data to the database.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "FAILED",
+                        "code": 500,
+                        "message": "Failed to add sample data to database"
+                    }
+                }
+            }
+        },
+    },
+)
 async def add_sample_data(session: AsyncSession = Depends(database.get_session)):
+    """
+    Add sample face embeddings to the database.
+
+    This function:
+    - Retrieves an active database session.
+    - Calls the `generate_face_embeddings_sample` function to add sample data.
+    - Returns a success message if successful.
+    - Raises an HTTP 500 error if data insertion fails.
+
+    **Returns:**
+    - Success message if data is added.
+    - HTTP 500 error if data insertion fails.
+    """
     async with session as db_session:
-        await faceRecognizeService.generate_face_embeddings_sample(db_session)
+        result = await faceRecognizeService.generate_face_embeddings_sample(db_session)
+        if result == ErrorType.INTERNAL_SERVER_ERROR.value:
+            raise HTTPException(
+                status_code=500,
+                detail=ResponseMessage(
+                    status=STATUS.FAILED,
+                    code=500,
+                    message="Failed to add sample data to database"
+                ).model_dump()
+            )
+        return result

@@ -71,70 +71,74 @@ class FaceRecognizeService:
         return self.index_to_name[best_index], best_distance
     
     async def generate_face_embeddings_sample(self, db_session: AsyncSession, dataset_path="src\dataset"):
-        if db_session is None:
-            raise ValueError("⚠️ Cần cung cấp db_session để kết nối database!")
+        try:
+            if db_session is None:
+                raise ValueError("⚠️ Cần cung cấp db_session để kết nối database!")
 
-        num_folders = 0
-        num_files = 0
+            num_folders = 0
+            num_files = 0
 
-        for root, dirs, files in os.walk(dataset_path):
-            num_folders += len(dirs)
-            num_files += len(files)
+            for root, dirs, files in os.walk(dataset_path):
+                num_folders += len(dirs)
+                num_files += len(files)
 
-        print(f"{num_files} and {num_folders}")
+            print(f"{num_files} and {num_folders}")
 
-        for root, dirs, files in os.walk(dataset_path):
-            label = os.path.basename(root)
-            print(f"📂 Đọc thư mục: {label}")
-            count = 1
+            for root, dirs, files in os.walk(dataset_path):
+                label = os.path.basename(root)
+                print(f"📂 Đọc thư mục: {label}")
+                count = 1
 
-            # Kiểm tra xem người dùng đã tồn tại chưa
-            statement = select(FaceEmbeddingModel).where(FaceEmbeddingModel.label == label)
-            with await db_session.execute(statement) as result:
-                face = result.scalars().first()
+                # Kiểm tra xem người dùng đã tồn tại chưa
+                statement = select(FaceEmbeddingModel).where(FaceEmbeddingModel.label == label)
+                with await db_session.execute(statement) as result:
+                    face = result.scalars().first()
 
-            if face:
-                face_embedding_id = face.id
-            else:
-                new_face = FaceEmbeddingModel(label=label)
-                db_session.add(new_face)
-                await db_session.flush()  
-                face_embedding_id = new_face.id
+                if face:
+                    face_embedding_id = face.id
+                else:
+                    new_face = FaceEmbeddingModel(label=label)
+                    db_session.add(new_face)
+                    await db_session.flush()  
+                    face_embedding_id = new_face.id
 
-            for file in files:
-                file_path = os.path.join(root, file)
-                print(f"  📄 Xử lý: {file_path}")
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    print(f"  📄 Xử lý: {file_path}")
 
-                img_bgr = cv.imread(file_path)
-                if img_bgr is None:
-                    print(f"⚠️ Lỗi đọc ảnh: {file_path}")
-                    continue
+                    img_bgr = cv.imread(file_path)
+                    if img_bgr is None:
+                        print(f"⚠️ Lỗi đọc ảnh: {file_path}")
+                        continue
 
-                img_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
-                results = self.detector.detect_faces(img_rgb)
+                    img_rgb = cv.cvtColor(img_bgr, cv.COLOR_BGR2RGB)
+                    results = self.detector.detect_faces(img_rgb)
 
-                if results:
-                    x, y, w, h = results[0]['box']
-                    face_img = img_rgb[y:y+h, x:x+w]
+                    if results:
+                        x, y, w, h = results[0]['box']
+                        face_img = img_rgb[y:y+h, x:x+w]
 
-                    if face_img.shape[0] > 0 and face_img.shape[1] > 0:
-                        face_img = cv.resize(face_img, (160, 160))
-                        face_img = np.expand_dims(face_img, axis=0)
+                        if face_img.shape[0] > 0 and face_img.shape[1] > 0:
+                            face_img = cv.resize(face_img, (160, 160))
+                            face_img = np.expand_dims(face_img, axis=0)
 
-                        # Lấy embeddings
-                        ypred = self.facenet.embeddings(face_img).flatten().tolist()
-                        print(f"🎯 Embedding tạo thành công: {ypred[:5]}...")  # Debug
+                            # Lấy embeddings
+                            ypred = self.facenet.embeddings(face_img).flatten().tolist()
+                            print(f"🎯 Embedding tạo thành công: {ypred[:5]}...")  # Debug
 
-                        # Lưu vào DB
-                        new_vector = FaceVector(vector=ypred, face_embedding_id=face_embedding_id)
-                        db_session.add(new_vector)
-                        print(f"📝 Đã thêm vector vào DB: {new_vector}")
-                    if count == 5:
-                        break
-                    count += 1
+                            # Lưu vào DB
+                            new_vector = FaceVector(vector=ypred, face_embedding_id=face_embedding_id)
+                            db_session.add(new_vector)
+                            print(f"📝 Đã thêm vector vào DB: {new_vector}")
+                        if count == 5:
+                            break
+                        count += 1
 
-        await db_session.commit()  
-        print("✅ Đã commit dữ liệu vào PostgreSQL thành công!")
+            await db_session.commit()  
+            return "✅ Đã commit dữ liệu vào PostgreSQL thành công!"
+        except Exception as e:
+            print(e)
+            return ErrorType.INTERNAL_SERVER_ERROR.value
 
 
     
