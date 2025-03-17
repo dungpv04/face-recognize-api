@@ -3,7 +3,8 @@ from fastapi import UploadFile, Depends, HTTPException, APIRouter, FastAPI, File
 from contextlib import asynccontextmanager
 from typing import Annotated
 from face_recoginze_api.database.database import Database
-from face_recoginze_api.models.response_message import ResponseMessage, STATUS
+from face_recoginze_api.models.response_message import ResponseMessage, STATUS, ResponseSuccesss
+from face_recoginze_api.models.face_model import FaceModel
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 database = Database()
@@ -28,10 +29,12 @@ router = APIRouter(lifespan=lifespan)
         "content": {
             "application/json": {
                 "example": {
-                    "status": "SUCCEED",
-                    "message": "Found a face that matches the given data",
-                    "code": 200,
-                    "data": {"username": "john_doe"}
+                    "detail":{
+                        "status": "SUCCEED",
+                        "message": "Found a face that matches the given data",
+                        "code": 200,
+                        "data": {"username": "john_doe"}
+                    }
                 }
             }
         }
@@ -41,9 +44,11 @@ router = APIRouter(lifespan=lifespan)
         "content": {
             "application/json": {
                 "example": {
-                    "status": "FAILED",
-                    "message": "You must upload exactly 1 file.",
-                    "code": 400
+                    "detail":{
+                        "status": "FAILED",
+                        "message": "You must upload exactly 1 file.",
+                        "code": 400
+                    }
                 }
             }
         }
@@ -53,9 +58,11 @@ router = APIRouter(lifespan=lifespan)
         "content": {
             "application/json": {
                 "example": {
-                    "status": "FAILED",
-                    "message": "Face not found",
-                    "code": 404
+                    "detail":{
+                        "status": "FAILED",
+                        "message": "Face not found",
+                        "code": 404
+                    }
                 }
             }
         }
@@ -75,7 +82,7 @@ async def recognize_face(image: UploadFile):
     elif result == ErrorType.NO_FACE_DETECED.value or result == ErrorType.NOT_MOVING_FACE.value:
         raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message=result, code=400).model_dump())
     else:
-        return ResponseMessage(status=STATUS.SUCCEED, message="Found a face matches the given data", code=200, data={'username': result})
+        return ResponseSuccesss(detail=ResponseMessage(status=STATUS.SUCCEED, message="Found a face matches the given data", code=200, data={'username': result})).model_dump()
     
 @router.post("/embedding", responses={
     200: {
@@ -83,9 +90,11 @@ async def recognize_face(image: UploadFile):
         "content": {
             "application/json": {
                 "example": {
-                    "status": "SUCCEED",
-                    "message": "Face has been added to the database",
-                    "code": 200
+                    "detail": {
+                        "status": "SUCCEED",
+                        "message": "Face has been added to the database",
+                        "code": 200
+                    }
                 }
             }
         }
@@ -95,9 +104,11 @@ async def recognize_face(image: UploadFile):
         "content": {
             "application/json": {
                 "example": {
-                    "status": "FAILED",
-                    "message": "You must upload at least 5 images",
-                    "code": 400
+                    "detail":{
+                        "status": "FAILED",
+                        "message": "You must upload at least 5 images",
+                        "code": 400
+                    }
                 }
             }
         }
@@ -107,9 +118,11 @@ async def recognize_face(image: UploadFile):
         "content": {
             "application/json": {
                 "example": {
-                    "status": "FAILED",
-                    "message": "Face already exists",
-                    "code": 409
+                    "detail":{
+                        "status": "FAILED",
+                        "message": "Face already exists",
+                        "code": 409
+                    }
                 }
             }
         }
@@ -119,15 +132,17 @@ async def recognize_face(image: UploadFile):
         "content": {
             "application/json": {
                 "example": {
-                    "status": "FAILED",
-                    "message": "Internal Server Error",
-                    "code": 500
+                    "detail":{
+                        "status": "FAILED",
+                        "message": "Internal Server Error",
+                        "code": 500
+                    }
                 }
             }
         }
     }
 })
-async def add_new_face(username: str, images: List[UploadFile], session: AsyncSession = Depends(database.get_session)):
+async def add_new_face(data: FaceModel, images: List[UploadFile], session: AsyncSession = Depends(database.get_session)):
     
     if len(images) < 5:
         raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, code=400, message="You must upload at least 5 images").model_dump())
@@ -137,13 +152,13 @@ async def add_new_face(username: str, images: List[UploadFile], session: AsyncSe
             raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
 
     async with session as db_session:
-        result = await faceRecognizeService.generate_face_embeddings(username=username, files=images, db_session=db_session)
+        result = await faceRecognizeService.generate_face_embeddings(username=data.username, files=images, db_session=db_session)
         if result == ErrorType.INTERNAL_SERVER_ERROR.value:
             raise HTTPException(status_code=500)
         elif result == ErrorType.FACE_EXISTED.value or result == ErrorType.USERNAME_EXISTED.value:
             raise HTTPException(status_code=409, detail=ResponseMessage(status=STATUS.FAILED, message=result, code=409).model_dump())
         else:
-            return ResponseMessage(status=STATUS.SUCCEED, message="Face has been added to database", code=200)
+            return ResponseSuccesss(detail=ResponseMessage(status=STATUS.SUCCEED, message="Face has been added to database", code=200)).model_dump()
 
 @router.post(
     "/sample",
@@ -155,9 +170,11 @@ async def add_new_face(username: str, images: List[UploadFile], session: AsyncSe
               "content": {
                 "application/json": {
                     "example": {
-                        "status": "SUCCEED",
-                        "code": 200,
-                        "message": "Sample data added successfully."
+                        "detail":{
+                            "status": "SUCCEED",
+                            "code": 200,
+                            "message": "Sample data added successfully."
+                        }
                     }
                 }
             }},
@@ -166,9 +183,11 @@ async def add_new_face(username: str, images: List[UploadFile], session: AsyncSe
             "content": {
                 "application/json": {
                     "example": {
-                        "status": "FAILED",
-                        "code": 500,
-                        "message": "Failed to add sample data to database"
+                        "detail":{
+                            "status": "FAILED",
+                            "code": 500,
+                            "message": "Failed to add sample data to database"
+                        }
                     }
                 }
             }

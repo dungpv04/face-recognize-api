@@ -11,3 +11,6 @@ class ResponseMessage(BaseModel):
     message: str
     code: Optional[int] = None
     data: Optional[dict] = None
+
+class ResponseSuccesss(BaseModel):
+    detail: ResponseMessage
