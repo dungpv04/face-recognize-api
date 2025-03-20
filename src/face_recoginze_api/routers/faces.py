@@ -10,6 +10,11 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 database = Database()
 
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg", "image/png", "image/gif", "image/bmp",
+    "image/webp", "image/jfif", "image/avif"
+}
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global faceRecognizeService, database
@@ -152,7 +157,7 @@ async def add_new_face(data: str = Form(...), images: List[UploadFile] = File(..
             raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, code=400, message="You must upload at least 5 images").model_dump())
 
         for image in images:
-            if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif", ".avif")):
+            if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif", ".avif")) and image.content_type not in ALLOWED_IMAGE_TYPES:
                 raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
 
         async with session as db_session:
