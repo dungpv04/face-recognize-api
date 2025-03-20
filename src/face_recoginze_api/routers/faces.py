@@ -1,11 +1,12 @@
 from face_recoginze_api.services.face_recognize_service import FaceRecognizeService, ErrorType
-from fastapi import UploadFile, Depends, HTTPException, APIRouter, FastAPI, File
+from fastapi import UploadFile, Depends, HTTPException, APIRouter, FastAPI, File, Form
 from contextlib import asynccontextmanager
 from typing import Annotated
 from face_recoginze_api.database.database import Database
 from face_recoginze_api.models.response_message import ResponseMessage, STATUS, ResponseSuccesss
 from face_recoginze_api.models.face_model import FaceModel
 from typing import List
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 database = Database()
 
@@ -142,23 +143,30 @@ async def recognize_face(image: UploadFile):
         }
     }
 })
-async def add_new_face(data: FaceModel, images: List[UploadFile], session: AsyncSession = Depends(database.get_session)):
+async def add_new_face(data: str = Form(...), images: List[UploadFile] = File(...), session: AsyncSession = Depends(database.get_session)):
     
-    if len(images) < 5:
-        raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, code=400, message="You must upload at least 5 images").model_dump())
+    try:
+        parsed_data = json.loads(data)  # Convert JSON string to dict
+        face_data = FaceModel.parse_obj(parsed_data)  # Convert to Pydantic model
+        if len(images) < 5:
+            raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, code=400, message="You must upload at least 5 images").model_dump())
 
-    for image in images:
-        if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif", ".avif")):
-            raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
+        for image in images:
+            if not image.filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", "jfif", ".avif")):
+                raise HTTPException(status_code=400, detail=ResponseMessage(status=STATUS.FAILED, message="Only image files (JPG, JPEG, PNG, GIF, BMP, WEBP) are allowed.", code=400).model_dump())
 
-    async with session as db_session:
-        result = await faceRecognizeService.generate_face_embeddings(username=data.username, files=images, db_session=db_session)
-        if result == ErrorType.INTERNAL_SERVER_ERROR.value:
-            raise HTTPException(status_code=500)
-        elif result == ErrorType.FACE_EXISTED.value or result == ErrorType.USERNAME_EXISTED.value:
-            raise HTTPException(status_code=409, detail=ResponseMessage(status=STATUS.FAILED, message=result, code=409).model_dump())
-        else:
-            return ResponseSuccesss(detail=ResponseMessage(status=STATUS.SUCCEED, message="Face has been added to database", code=200)).model_dump()
+        async with session as db_session:
+            result = await faceRecognizeService.generate_face_embeddings(username=face_data.username, files=images, db_session=db_session)
+            if result == ErrorType.INTERNAL_SERVER_ERROR.value:
+                raise HTTPException(status_code=500)
+            elif result == ErrorType.FACE_EXISTED.value or result == ErrorType.USERNAME_EXISTED.value:
+                raise HTTPException(status_code=409, detail=ResponseMessage(status=STATUS.FAILED, message=result, code=409).model_dump())
+            else:
+                return ResponseSuccesss(detail=ResponseMessage(status=STATUS.SUCCEED, message="Face has been added to database", code=200)).model_dump()
+
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON format in 'data'"}
+
 
 @router.post(
     "/sample",
