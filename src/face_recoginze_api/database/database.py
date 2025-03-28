@@ -1,9 +1,8 @@
-from face_recoginze_api.database import tables
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from face_recoginze_api.settings.database import DatabaseSettings
 from typing import AsyncGenerator
-
+from face_recoginze_api.models import models
 
 class Database:
     def __init__(self):
@@ -20,7 +19,7 @@ class Database:
 
     async def create_db_and_tables(self):
         async with self.engine.begin() as conn:
-            await conn.run_sync(tables.SQLModel.metadata.create_all)
+            await conn.run_sync(models.SQLModel.metadata.create_all)
 
 
     @asynccontextmanager

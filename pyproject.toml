@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "aiofiles>=24.1.0",
     "alembic>=1.15.1",
     "asyncpg>=0.30.0",
     "faiss-cpu>=1.10.0",
@@ -25,6 +26,7 @@ dependencies = [
     "sqlalchemy>=2.0.38",
     "sqlmodel>=0.0.23",
     "tensorflow>=2.18.0",
+    "uvicorn>=0.34.0",
 ]
 
 [project.scripts]
