@@ -6,13 +6,14 @@ import os
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from face_recoginze_api.models.models import Image
-from face_recoginze_api.repositories.repositories import save_image_metadata, get_storage_path_by_id
+from face_recoginze_api.repositories.repositories import save_image_metadata, get_metadata_by_id, delete_metadata_by_id
 from typing import AsyncGenerator
 import aiofiles
 from face_recoginze_api.DTOs.dtos import ImageMetadata
 from fastapi import Depends
 from enum import Enum
 from face_recoginze_api.enums.enums import ReadFileError, ErrorType
+import asyncio
 
 class ImageService:
     SAVE_DIR = "src/images"
@@ -46,9 +47,10 @@ class ImageService:
         return None
     
     async def read_img_by_id(self, image_id, db: AsyncSession):
-        storage_path = await get_storage_path_by_id(session=db, image_id=image_id)
+        metatada = await get_metadata_by_id(session=db, image_id=image_id)
         try:
-            if storage_path:
+            if metatada:
+                storage_path = metatada.storage_path
                 async with aiofiles.open(storage_path, "rb") as file:  # Mở file ở chế độ nhị phân
                     content = await file.read()
                 return None, content  # Trả về dữ liệu nhị phân của ảnh
@@ -61,10 +63,13 @@ class ImageService:
             return ErrorType.INTERNAL_SERVER_ERROR.value  # Lỗi không xác định
         
     async def delete_img_by_id(self, image_id, db: AsyncSession):
-        storage_path = await get_storage_path_by_id(session=db, image_id=image_id)
+        metadata = await get_metadata_by_id(session=db, image_id=image_id)
         try:
-            if storage_path:
-                await aiofiles.os.remove(storage_path)  # Xóa file
+            if metadata:
+                storage_path = metadata.storage_path
+                if not metadata.is_validate:
+                    await asyncio.to_thread(os.remove, storage_path)  # Xóa file async-friendly
+                    await delete_metadata_by_id(session=db, image_id=image_id)
                 return None  # Xóa thành công
             return ReadFileError.METADATA_NOT_FOUND.value  # Không tìm thấy file
         except FileNotFoundError:

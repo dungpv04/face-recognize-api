@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends
-from face_recoginze_api.routers import images, faces
+from face_recoginze_api.routers import images, faces, users
 from fastapi.middleware.cors import CORSMiddleware
 from face_recoginze_api.database.database import Database
 from contextlib import asynccontextmanager
@@ -35,6 +35,12 @@ app.include_router(
     faces.router,
     prefix="/face",
     tags=["face"],
+)
+
+app.include_router(
+    users.router,
+    prefix="/user",
+    tags=["user"],
 )
 
 

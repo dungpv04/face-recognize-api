@@ -3,10 +3,6 @@ from typing import Optional
 from enum import Enum
 from typing import List
 
-class STATUS(Enum):
-    SUCCEED = "Succeed"
-    FAILED = "Failed"
-
 class ResponseMessage(BaseModel):
     status: str
     message: str
@@ -23,6 +19,7 @@ class EmbeddingDTO(BaseModel):
     user_name: str
 
 class UserDTO(BaseModel):
+    id: Optional[int] = None
     username: str
 
 class ImageMetadata(BaseModel):
@@ -30,4 +27,4 @@ class ImageMetadata(BaseModel):
 
 class ValidateDTO(BaseModel):
     image: ImageMetadata
-    user: UserDTO
+    user_id: int

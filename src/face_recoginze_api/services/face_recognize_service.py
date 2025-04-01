@@ -13,12 +13,12 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from enum import Enum
-from face_recoginze_api.repositories.repositories import get_embeddings_with_users, get_username_by_id, get_user_by_dto, update_is_validate_by_image_id
+from face_recoginze_api.repositories.repositories import get_embeddings_with_users, get_user_by_id, get_user_by_dto, update_is_validate_by_image_id, add_user, add_embedding , get_metadata_by_id, get_embedding_id_by_user_and_image
 from fastapi import Depends
 from face_recoginze_api.services.image_service import ImageService
 from typing import Annotated
 from face_recoginze_api.DTOs.dtos import UserDTO, ValidateDTO
-from face_recoginze_api.enums.enums import ErrorType
+from face_recoginze_api.enums.enums import ErrorType, ReadFileError
 
 class FaceRecognizeService:
 
@@ -66,8 +66,8 @@ class FaceRecognizeService:
             return ErrorType.FACE_NOT_FOUND.value, None
         
         predicted_user_id = int(self.index_to_name[best_index])
-        username = await get_username_by_id(db = db, user_id=predicted_user_id)
-        return None, UserDTO(username=username)
+        user = await get_user_by_id(db = db, user_id=predicted_user_id)
+        return None, UserDTO(id = user.id, username=user.name)
     
     async def generate_face_embedding_from_image(self, image_id: int, db: AsyncSession):
         error, img_content = await self.image_service.read_img_by_id(image_id=image_id, db=db)
@@ -100,31 +100,57 @@ class FaceRecognizeService:
         return ErrorType.NO_FACE_DETECED.value, None
 
     async def validate_face(self, image_id: int, db_session: AsyncSession) -> str:
-        error, is_face_exist = await self.recognize_face_faiss(db=db_session, image_id=image_id)
-        if error is None or error:
-            return ErrorType.FACE_EXISTED.value
-        elif error == ErrorType.FACE_NOT_FOUND.value:
-            return None
-        else:
+        error, embedding = await self.generate_face_embedding_from_image(image_id=image_id, db=db_session)
+        if error: 
             return error
-    
-    async def validate_user_data(self, userDTO: UserDTO, db_session: AsyncSession) -> str:
-        is_user_exist = await get_user_by_dto(dto=userDTO, session=db_session)
-        if is_user_exist:
-            return ErrorType.USER_EXISTED.value
         return None
     
-    async def validate_add_request(self, validateDTO: ValidateDTO, db_session: AsyncSession):
-        userDTO = validateDTO.user
-        imageDTO = validateDTO.image
-        face_error = await self.validate_face(image_id=imageDTO.image_id, db_session=db_session) 
-        user_data_error = await self.validate_user_data(userDTO=userDTO, db_session=db_session)
+    async def validate_metadata(self, image_id: int, db_session: AsyncSession):
+        face_error = await self.validate_face(image_id=image_id, db_session=db_session)
         if face_error:
-            await self.image_service.delete_img_by_id(image_id=imageDTO.image_id, db=db_session)
+            await self.image_service.delete_img_by_id(image_id=image_id, db=db_session)
             return face_error
+        await update_is_validate_by_image_id(image_id=image_id, db=db_session)
+        return None
+            
+    async def validate_user_data(self, user_id: int, image_id: int, db_session: AsyncSession) -> str:
+        error, userDTO = await self.recognize_face_faiss(db=db_session, image_id=image_id)
+        if (not error and userDTO.id != user_id) or user_id in self.labels:
+            return ErrorType.USER_FACE_NOT_MATCH.value
+        return None
+    
+    async def add_new_embedding(self, data: ValidateDTO, db: AsyncSession):
+        user_data_error = await self.validate_user_data(user_id=data.user_id, image_id=data.image.image_id, db_session=db)
         if user_data_error:
             return user_data_error
-        row_updated = await update_is_validate_by_image_id(image_id=imageDTO.image_id, db=db_session)
-        if row_updated:
-            return None
-        return ErrorType.INTERNAL_SERVER_ERROR.value
+        
+        metadata = await get_metadata_by_id(session=db, image_id=data.image.image_id)
+        if not metadata:
+            return ReadFileError.METADATA_NOT_FOUND.value
+        if metadata.is_validate:
+            is_embedding_exist = await get_embedding_id_by_user_and_image(session=db, user_id=data.user_id, image_id=metadata.id)
+            if is_embedding_exist:
+                return ErrorType.IMAGE_HAS_BEEN_USED.value
+            error, embedding = await self.generate_face_embedding_from_image(image_id=data.image.image_id, db=db)
+            if error:
+                return error
+            embedding = embedding.flatten().tolist()  
+            await self.add_to_faiss_index(user_id=data.user_id, vector=embedding)  
+            return await add_embedding(session=db, vector=embedding, image_id=data.image.image_id, user_id=data.user_id)
+
+        return ErrorType.IMAGE_NOT_VALIDATE.value
+
+    
+    async def add_to_faiss_index(self, user_id: int, vector: list[float]):
+        if not hasattr(self, "index") or self.index is None:
+            print("FAISS Index chưa được khởi tạo!")
+            return ErrorType.INTERNAL_SERVER_ERROR.value
+        
+        # Convert list[float] → numpy array
+        new_vector = np.array(vector, dtype=np.float32).reshape(1, -1)  # Định dạng (1, 512)
+        # Thêm vào FAISS
+        self.index.add(new_vector)
+        # Thêm user_id vào labels
+        self.labels = np.append(self.labels, user_id)
+        # Cập nhật ánh xạ FAISS -> user_id
+        self.index_to_name[len(self.labels) - 1] = user_id  

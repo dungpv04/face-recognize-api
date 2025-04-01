@@ -9,7 +9,9 @@ from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 from face_recoginze_api.DTOs.dtos import ImageMetadata
 import numpy as np
-from sqlmodel import update
+from sqlmodel import update, delete
+from sqlalchemy.exc import IntegrityError
+from face_recoginze_api.enums.enums import ErrorType
 
 
 #@asynccontextmanager
@@ -48,19 +50,32 @@ async def save_image_metadata(db: AsyncSession, file: UploadFile, file_path: str
     result = ImageMetadata(image_id=image_metadata.id)
     return result  # Trả về metadata sau khi lưu
 
-async def get_storage_path_by_id(session: AsyncSession, image_id: int):
-    statement = select(Image.storage_path).where(Image.id == image_id)
+async def get_metadata_by_id(session: AsyncSession, image_id: int) -> Image | None:
+    statement = select(Image).where(Image.id == image_id)
     result = await session.execute(statement)
     metadata = result.first()
     if metadata:
         return metadata[0]
     return None  # Trả về storage_path hoặc None nếu không tìm thấy
 
-async def get_username_by_id(db: AsyncSession, user_id: int) -> str | None:
-    query = select(User.name).where(User.id == user_id)
+async def delete_metadata_by_id(session: AsyncSession, image_id: int) -> bool:
+    statement = select(Image).where(Image.id == image_id)
+    result = await session.execute(statement)
+    image = result.scalar_one_or_none()  # Lấy đối tượng Image nếu tồn tại
+    
+    if image:
+        await session.delete(image)  # Xóa đối tượng Image khỏi DB
+        await session.commit()  # Lưu thay đổi
+        return True  # Trả về True nếu xóa thành công
+    
+    return False  # Trả về False nếu không tìm thấy ảnh
+
+
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+    query = select(User).where(User.id == user_id)
     result = await db.execute(query)
-    username = result.scalar_one_or_none()
-    return username
+    user = result.scalar_one_or_none()
+    return user
 
 
 async def get_user_by_dto(dto: UserDTO, session: AsyncSession) -> int | None:
@@ -78,3 +93,48 @@ async def update_is_validate_by_image_id(image_id: int, db: AsyncSession) -> boo
     await db.commit()  # Lưu thay đổi vào DB
 
     return result.rowcount > 0  # Trả về True nếu có ít nhất 1 dòng được cập nhật
+
+async def add_user(session: AsyncSession, userDTO: UserDTO) -> int:
+    try:
+        new_user = User(name=userDTO.username)  # Tạo user mới
+        session.add(new_user)  # Thêm vào DB
+        await session.commit()  # Lưu thay đổi
+        await session.refresh(new_user)  # Làm mới dữ liệu
+        return new_user.id
+    except Exception as e:
+        await session.rollback()  # Rollback nếu lỗi
+        print(f"Error: {str(e)}")
+        raise e
+    
+
+async def add_embedding(session: AsyncSession, vector: list[float], user_id: int, image_id: int) -> str:
+    try:
+        new_embedding = Embedding(vector=vector, user_id=user_id, image_id=image_id)
+        session.add(new_embedding)  # Thêm vào DB
+        await session.commit()  # Lưu thay đổi
+        await session.refresh(new_embedding)  # Làm mới dữ liệu
+        return f"Embedding added successfully"
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return ErrorType.INTERNAL_SERVER_ERROR.value
+
+async def get_embedding_id_by_user_and_image(session: AsyncSession, user_id: int, image_id: int) -> int | None:
+    statement = select(Embedding.id).where(
+        Embedding.user_id == user_id,
+        Embedding.image_id == image_id
+    )
+    result = await session.execute(statement)
+    id = result.scalar_one_or_none()
+    return id
+
+def statement_get_user_by_id(user_id: int):
+    return select(User).where(User.id == user_id)
+
+def statement_get_all_users():
+    return select(User)
+
+def statement_create_user(userDTO: UserDTO):
+    return User(name=userDTO.username)  # Tạo instance chứ không phải câu lệnh SQL
+
+def statement_delete_user_by_id(user_id: int):
+    return delete(User).where(User.id == user_id)
