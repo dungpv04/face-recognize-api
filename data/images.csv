@@ -1,0 +1,116 @@
+id,filename,content_type,file_size,storage_path,is_validate
+1,001_fe3347c0.jpg,image/jpeg,36023,src/dataset\Angelina Jolie\001_fe3347c0.jpg,True
+2,002_8f8da10e.jpg,image/jpeg,38793,src/dataset\Angelina Jolie\002_8f8da10e.jpg,True
+3,003_57612506.jpg,image/jpeg,33755,src/dataset\Angelina Jolie\003_57612506.jpg,True
+4,004_f61e7d0c.jpg,image/jpeg,5675,src/dataset\Angelina Jolie\004_f61e7d0c.jpg,True
+5,005_582c121a.jpg,image/jpeg,35651,src/dataset\Angelina Jolie\005_582c121a.jpg,True
+6,httpcsvkmeuaeccjpg.jpg,image/jpeg,8352,src/dataset\ben_afflek\httpcsvkmeuaeccjpg.jpg,True
+7,httpimagesfandangocomrImageRendererredesignstaticimgnoxportraitjpgpcpcpcimagesmasterrepositoryperformerimagespjpg.jpg,image/jpeg,9303,src/dataset\ben_afflek\httpimagesfandangocomrImageRendererredesignstaticimgnoxportraitjpgpcpcpcimagesmasterrepositoryperformerimagespjpg.jpg,True
+8,httpssmediacacheakpinimgcomxdbbdbbbececacdecdcdfjpg.jpg,image/jpeg,20112,src/dataset\ben_afflek\httpssmediacacheakpinimgcomxdbbdbbbececacdecdcdfjpg.jpg,True
+9,httpssmediacacheakpinimgcomxdfdfadcfeabjpg.jpg,image/jpeg,11672,src/dataset\ben_afflek\httpssmediacacheakpinimgcomxdfdfadcfeabjpg.jpg,True
+10,httpssmediacacheakpinimgcomxedaedabcbefbcbabbjpg.jpg,image/jpeg,14406,src/dataset\ben_afflek\httpssmediacacheakpinimgcomxedaedabcbefbcbabbjpg.jpg,True
+11,001_c04300ef.jpg,image/jpeg,36705,src/dataset\Brad Pitt\001_c04300ef.jpg,True
+12,002_cc1b9701.jpg,image/jpeg,37485,src/dataset\Brad Pitt\002_cc1b9701.jpg,True
+13,003_7a6b2156.jpg,image/jpeg,21963,src/dataset\Brad Pitt\003_7a6b2156.jpg,True
+14,004_777c50d0.jpg,image/jpeg,30055,src/dataset\Brad Pitt\004_777c50d0.jpg,True
+15,005_02ab3a1b.jpg,image/jpeg,20755,src/dataset\Brad Pitt\005_02ab3a1b.jpg,True
+16,164311_v9_bb.jpg,image/jpeg,35441,src/dataset\Bryan Cranston\164311_v9_bb.jpg,True
+17,5KPRSFQX5QI6NFY23LPZVMMINE.jpg,image/jpeg,685127,src/dataset\Bryan Cranston\5KPRSFQX5QI6NFY23LPZVMMINE.jpg,True
+18,Bryan_Cranston.jpg,image/jpeg,162069,src/dataset\Bryan Cranston\Bryan_Cranston.jpg,True
+19,images (1).jpeg,image/jpeg,6900,src/dataset\Bryan Cranston\images (1).jpeg,True
+20,images.jpeg,image/jpeg,10376,src/dataset\Bryan Cranston\images.jpeg,True
+21,001_d3323f3c.jpg,image/jpeg,29779,src/dataset\Denzel Washington\001_d3323f3c.jpg,True
+22,002_f44b8d45.jpg,image/jpeg,21028,src/dataset\Denzel Washington\002_f44b8d45.jpg,True
+23,003_b622e925.jpg,image/jpeg,32609,src/dataset\Denzel Washington\003_b622e925.jpg,True
+24,004_677c65bf.jpg,image/jpeg,20739,src/dataset\Denzel Washington\004_677c65bf.jpg,True
+25,005_cb37c7b2.jpg,image/jpeg,18452,src/dataset\Denzel Washington\005_cb37c7b2.jpg,True
+26,face_img.jpg,image/jpeg,136886,src/dataset\dung\face_img.jpg,True
+27,IMG_2763.jpg,image/jpeg,1496826,src/dataset\dung\IMG_2763.jpg,True
+28,IMG_2764.jpg,image/jpeg,1493220,src/dataset\dung\IMG_2764.jpg,True
+29,IMG_2765.jpg,image/jpeg,1510522,src/dataset\dung\IMG_2765.jpg,True
+30,IMG_2766.jpg,image/jpeg,1549804,src/dataset\dung\IMG_2766.jpg,True
+31,001_9adc92c2.jpg,image/jpeg,33769,src/dataset\Hugh Jackman\001_9adc92c2.jpg,True
+32,002_85eab275.jpg,image/jpeg,29105,src/dataset\Hugh Jackman\002_85eab275.jpg,True
+33,003_8889ec2c.jpg,image/jpeg,28522,src/dataset\Hugh Jackman\003_8889ec2c.jpg,True
+34,004_41caa173.jpg,image/jpeg,24874,src/dataset\Hugh Jackman\004_41caa173.jpg,True
+35,005_3ba56da0.jpg,image/jpeg,29735,src/dataset\Hugh Jackman\005_3ba56da0.jpg,True
+36,1.jpg,image/jpeg,238497,src/dataset\jenna_ortega\1.jpg,True
+37,10.jpg,image/jpeg,78130,src/dataset\jenna_ortega\10.jpg,True
+38,2.jpg,image/jpeg,376161,src/dataset\jenna_ortega\2.jpg,True
+39,3.jpg,image/jpeg,317545,src/dataset\jenna_ortega\3.jpg,True
+40,4.jpg,image/jpeg,270380,src/dataset\jenna_ortega\4.jpg,True
+41,001_21a7d5e6.jpg,image/jpeg,33726,src/dataset\Jennifer Lawrence\001_21a7d5e6.jpg,True
+42,002_533748b2.jpg,image/jpeg,26933,src/dataset\Jennifer Lawrence\002_533748b2.jpg,True
+43,003_963a3627.jpg,image/jpeg,66609,src/dataset\Jennifer Lawrence\003_963a3627.jpg,True
+44,004_94f26ed9.jpg,image/jpeg,49891,src/dataset\Jennifer Lawrence\004_94f26ed9.jpg,True
+45,005_7f198c47.jpg,image/jpeg,39361,src/dataset\Jennifer Lawrence\005_7f198c47.jpg,True
+46,001_2288a4f6.jpg,image/jpeg,24919,src/dataset\Johnny Depp\001_2288a4f6.jpg,True
+47,002_331d0423.jpg,image/jpeg,34191,src/dataset\Johnny Depp\002_331d0423.jpg,True
+48,003_64926b97.jpg,image/jpeg,5082,src/dataset\Johnny Depp\003_64926b97.jpg,True
+49,004_18e08ab4.jpg,image/jpeg,33536,src/dataset\Johnny Depp\004_18e08ab4.jpg,True
+50,005_9406f32d.jpg,image/jpeg,36475,src/dataset\Johnny Depp\005_9406f32d.jpg,True
+51,001_5992faf7.jpg,image/jpeg,35832,src/dataset\Kate Winslet\001_5992faf7.jpg,True
+52,002_590bb980.jpg,image/jpeg,26691,src/dataset\Kate Winslet\002_590bb980.jpg,True
+53,003_acb20793.jpg,image/jpeg,29631,src/dataset\Kate Winslet\003_acb20793.jpg,True
+54,004_0816d969.jpg,image/jpeg,41808,src/dataset\Kate Winslet\004_0816d969.jpg,True
+55,005_93b2fce9.jpg,image/jpeg,29063,src/dataset\Kate Winslet\005_93b2fce9.jpg,True
+56,001_08194468.jpg,image/jpeg,23600,src/dataset\Leonardo DiCaprio\001_08194468.jpg,True
+57,002_86e8aa58.jpg,image/jpeg,20687,src/dataset\Leonardo DiCaprio\002_86e8aa58.jpg,True
+58,003_85990366.jpg,image/jpeg,24129,src/dataset\Leonardo DiCaprio\003_85990366.jpg,True
+59,004_af012af1.jpg,image/jpeg,27476,src/dataset\Leonardo DiCaprio\004_af012af1.jpg,True
+60,005_7fe5b764.jpg,image/jpeg,35663,src/dataset\Leonardo DiCaprio\005_7fe5b764.jpg,True
+61,001_dfb62d96.jpg,image/jpeg,54392,src/dataset\Megan Fox\001_dfb62d96.jpg,True
+62,002_6e289116.jpg,image/jpeg,41796,src/dataset\Megan Fox\002_6e289116.jpg,True
+63,003_61dd1e53.jpg,image/jpeg,54946,src/dataset\Megan Fox\003_61dd1e53.jpg,True
+64,004_6aede3d3.jpg,image/jpeg,43911,src/dataset\Megan Fox\004_6aede3d3.jpg,True
+65,005_9574c208.jpg,image/jpeg,45685,src/dataset\Megan Fox\005_9574c208.jpg,True
+66,001_9cd1160a.jpg,image/jpeg,46584,src/dataset\Natalie Portman\001_9cd1160a.jpg,True
+67,002_3a2ef5df.jpg,image/jpeg,20297,src/dataset\Natalie Portman\002_3a2ef5df.jpg,True
+68,003_13b7bb9d.jpg,image/jpeg,28737,src/dataset\Natalie Portman\003_13b7bb9d.jpg,True
+69,004_09c5d285.jpg,image/jpeg,33979,src/dataset\Natalie Portman\004_09c5d285.jpg,True
+70,005_f8b76ad5.jpg,image/jpeg,38240,src/dataset\Natalie Portman\005_f8b76ad5.jpg,True
+71,001_504d320d.jpg,image/jpeg,48272,src/dataset\Nicole Kidman\001_504d320d.jpg,True
+72,002_36285f46.jpg,image/jpeg,33571,src/dataset\Nicole Kidman\002_36285f46.jpg,True
+73,003_98a0852a.jpg,image/jpeg,23633,src/dataset\Nicole Kidman\003_98a0852a.jpg,True
+74,004_3491d187.jpg,image/jpeg,23646,src/dataset\Nicole Kidman\004_3491d187.jpg,True
+75,005_0623ac96.jpg,image/jpeg,40452,src/dataset\Nicole Kidman\005_0623ac96.jpg,True
+76,001_a51bb26a.jpg,image/jpeg,24189,src/dataset\Robert Downey Jr\001_a51bb26a.jpg,True
+77,002_cc92e159.jpg,image/jpeg,30564,src/dataset\Robert Downey Jr\002_cc92e159.jpg,True
+78,003_e18853f8.jpg,image/jpeg,34604,src/dataset\Robert Downey Jr\003_e18853f8.jpg,True
+79,004_29776ffe.jpg,image/jpeg,7060,src/dataset\Robert Downey Jr\004_29776ffe.jpg,True
+80,005_8af3cada.jpg,image/jpeg,32561,src/dataset\Robert Downey Jr\005_8af3cada.jpg,True
+81,001_5ef3e95c.jpg,image/jpeg,40398,src/dataset\Sandra Bullock\001_5ef3e95c.jpg,True
+82,002_24fab375.jpg,image/jpeg,35241,src/dataset\Sandra Bullock\002_24fab375.jpg,True
+83,003_0e3303fc.jpg,image/jpeg,28892,src/dataset\Sandra Bullock\003_0e3303fc.jpg,True
+84,004_78847874.jpg,image/jpeg,37220,src/dataset\Sandra Bullock\004_78847874.jpg,True
+85,005_b0b4e2fa.jpg,image/jpeg,31171,src/dataset\Sandra Bullock\005_b0b4e2fa.jpg,True
+86,1.jpg,image/jpeg,757818,src/dataset\sardor_abdirayimov\1.jpg,True
+87,10.jpg,image/jpeg,104927,src/dataset\sardor_abdirayimov\10.jpg,True
+88,2.png,image/jpeg,1086836,src/dataset\sardor_abdirayimov\2.png,True
+89,3.JPG,image/jpeg,2010342,src/dataset\sardor_abdirayimov\3.JPG,True
+90,4.JPG,image/jpeg,1694552,src/dataset\sardor_abdirayimov\4.JPG,True
+91,001_cb004eea.jpg,image/jpeg,36145,src/dataset\Scarlett Johansson\001_cb004eea.jpg,True
+92,002_ea6e259d.jpg,image/jpeg,5282,src/dataset\Scarlett Johansson\002_ea6e259d.jpg,True
+93,003_b416eed5.jpg,image/jpeg,28774,src/dataset\Scarlett Johansson\003_b416eed5.jpg,True
+94,004_bb16ac65.jpg,image/jpeg,28436,src/dataset\Scarlett Johansson\004_bb16ac65.jpg,True
+95,005_1fc7405f.jpg,image/jpeg,25215,src/dataset\Scarlett Johansson\005_1fc7405f.jpg,True
+96,1.jfif,image/jpeg,41843,src/dataset\taylor_swift\1.jfif,True
+97,10.jpg,image/jpeg,36411,src/dataset\taylor_swift\10.jpg,True
+98,2.jpg,image/jpeg,292215,src/dataset\taylor_swift\2.jpg,True
+99,3.jfif,image/jpeg,347118,src/dataset\taylor_swift\3.jfif,True
+100,4.jpg,image/jpeg,131342,src/dataset\taylor_swift\4.jpg,True
+101,001_08212dcd.jpg,image/jpeg,24766,src/dataset\Tom Cruise\001_08212dcd.jpg,True
+102,002_6749a2c4.jpg,image/jpeg,22600,src/dataset\Tom Cruise\002_6749a2c4.jpg,True
+103,003_ed3fb7b1.jpg,image/jpeg,34305,src/dataset\Tom Cruise\003_ed3fb7b1.jpg,True
+104,004_dc64d954.jpg,image/jpeg,24743,src/dataset\Tom Cruise\004_dc64d954.jpg,True
+105,005_2464c583.jpg,image/jpeg,28288,src/dataset\Tom Cruise\005_2464c583.jpg,True
+106,001_986d6c22.jpg,image/jpeg,33141,src/dataset\Tom Hanks\001_986d6c22.jpg,True
+107,002_f6b26479.jpg,image/jpeg,30170,src/dataset\Tom Hanks\002_f6b26479.jpg,True
+108,003_21d0aae6.jpg,image/jpeg,29170,src/dataset\Tom Hanks\003_21d0aae6.jpg,True
+109,004_a5881d85.jpg,image/jpeg,27377,src/dataset\Tom Hanks\004_a5881d85.jpg,True
+110,005_dac94cfe.jpg,image/jpeg,17640,src/dataset\Tom Hanks\005_dac94cfe.jpg,True
+111,001_beebcee2.jpg,image/jpeg,36790,src/dataset\Will Smith\001_beebcee2.jpg,True
+112,002_078f6fe5.jpg,image/jpeg,43663,src/dataset\Will Smith\002_078f6fe5.jpg,True
+113,003_936c5a43.jpg,image/jpeg,37532,src/dataset\Will Smith\003_936c5a43.jpg,True
+114,004_af9b4c7c.jpg,image/jpeg,32772,src/dataset\Will Smith\004_af9b4c7c.jpg,True
+115,005_37066c18.jpg,image/jpeg,31784,src/dataset\Will Smith\005_37066c18.jpg,True

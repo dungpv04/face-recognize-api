@@ -1,0 +1,40 @@
+services:
+
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: pgvector_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Dung200409
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      LISTEN_ADDRESSES: '*'
+    ports:
+      - "5433:5432"
+    networks:
+      - my_network
+  app:
+    build: .
+    depends_on:
+      - db
+    container_name: face_recognizer
+    environment:
+      db_name: "postgres"
+      username: "postgres"
+      password: "Dung200409"
+      hostname: "127.0.0.1"
+      port: "5433"
+    
+    volumes:
+      - .:/app
+
+    ports:
+      - "8000:8000"
+    command: ["uv", "run", "main.py"]
+    networks:
+      - my_network
+  
+networks:
+  my_network:
+    driver: bridge
