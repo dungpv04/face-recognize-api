@@ -14,6 +14,7 @@ from fastapi import Depends
 from enum import Enum
 from face_recoginze_api.enums.enums import ReadFileError, ErrorType
 import asyncio
+from pathlib import Path
 
 class ImageService:
     SAVE_DIR = "src/images"
@@ -50,7 +51,8 @@ class ImageService:
         metatada = await get_metadata_by_id(session=db, image_id=image_id)
         try:
             if metatada:
-                storage_path = metatada.storage_path
+                storage_path = Path(metatada.storage_path).as_posix()
+                storage_path = storage_path.replace("\\", "/")
                 async with aiofiles.open(storage_path, "rb") as file:  # Mở file ở chế độ nhị phân
                     content = await file.read()
                 return None, content  # Trả về dữ liệu nhị phân của ảnh

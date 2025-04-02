@@ -27,6 +27,7 @@ dependencies = [
     "sqlmodel>=0.0.23",
     "tensorflow>=2.18.0",
     "uvicorn>=0.34.0",
+    "opencv-python-headless>=4.11.0.86"
 ]
 
 [project.scripts]

@@ -13,6 +13,7 @@ class Database:
         self.hostname = self.db_config.hostname
         self.port = self.db_config.port
         pgsql_url = f"postgresql+asyncpg://{username}:{password}@{self.hostname}:{self.port}/{self.db_name}"
+        print(pgsql_url)
         self.engine = create_async_engine(pgsql_url, echo=True, future=True)
         self.async_session_maker = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
 
